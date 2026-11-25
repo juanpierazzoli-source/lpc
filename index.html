@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los Petersen Cocineros &amp; Cía.</title>
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<meta name="description" content="Los Petersen Cocineros &amp; Cía. Empresa familiar con más de 55 años de trayectoria.">
+
+<!-- Link preview (WhatsApp, Instagram, Slack, iMessage).
+     NOTE: og:image must become an absolute https:// URL once the site has a
+     real domain — WhatsApp's crawler does not resolve relative paths. -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_AR">
+<meta property="og:site_name" content="Los Petersen Cocineros &amp; Cía.">
+<meta property="og:title" content="Los Petersen Cocineros &amp; Cía.">
+<meta property="og:description" content="Empresa familiar con más de 55 años de trayectoria. Respeto por el producto, tradición y fiel equipo humano.">
+<meta property="og:image" content="assets/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Logo de Los Petersen Cocineros &amp; Cía.">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #272525;
+    --fade: 700ms;
+    --gutter: 6.4vw;
+    --dim: 0.1;
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+
+  .screen {
+    height: 100svh;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+
+  /* ---------- Screen 1: logo, click to reveal the company statement ---------- */
+
+  #intro {
+    display: grid;
+    place-items: center;
+    padding: 6vmin;
+    cursor: pointer;
+  }
+
+  .intro-stage {
+    display: grid;
+    place-items: center;
+  }
+
+  .intro-stage > * {
+    grid-area: 1 / 1;
+    transition: opacity var(--fade) ease;
+  }
+
+  .logo {
+    width: min(30vmin, 215px);
+    height: auto;
+  }
+
+  .statement {
+    width: min(62vw, 400px);
+    height: auto;
+  }
+
+  .statement,
+  #intro.revealed .logo {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #intro.revealed .statement {
+    opacity: 1;
+  }
+
+  /* ---------- Screen 2: the four topics, all in one frame ---------- */
+
+  #showcase {
+    position: relative;
+    overflow: hidden;
+    color: var(--ink);
+    transition: color 300ms ease;
+  }
+
+  /* "pan" is a bright photo, so nav and copy flip to white over it. */
+  #showcase.on-light {
+    color: #ffffff;
+  }
+
+  /* The nav floats over the photo — no band, no white strip. */
+  .bar {
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 2;
+    padding: 1.7rem var(--gutter) 0;
+    pointer-events: none;
+  }
+
+  .nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    pointer-events: auto;
+  }
+
+  .nav button {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    justify-self: start;
+    color: currentColor;
+    font-size: clamp(1rem, 1.5vw, 1.85rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1;
+    cursor: pointer;
+    opacity: var(--dim);
+    transition: opacity 300ms ease;
+  }
+
+  /* No focus ring from a mouse click; keyboard focus still gets one. */
+  .nav button:focus { outline: none; }
+
+  .nav button:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  .nav button.is-active {
+    opacity: 1;
+  }
+
+  .stage {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .shot {
+    position: absolute;
+    inset: 0;
+    background-image: var(--img, none);
+    /* Framed so the area behind the copy keeps its contrast. */
+    background-size: var(--size, cover);
+    background-position: var(--pos, center);
+    background-color: var(--bg);
+    opacity: 0;
+    transition: opacity var(--fade) ease;
+  }
+
+  .shot.is-active {
+    opacity: 1;
+  }
+
+  /* Framing lives here, not inline, so the mobile rules can override it. */
+  .shot[data-key="pan"] { --pos: 40% 22%; }
+  .shot[data-key="carne"] { --pos: center 20%; }
+  .shot[data-key="campo"] { --pos: center 30%; }
+
+  .copy {
+    position: absolute;
+    z-index: 2;
+    top: clamp(4.5rem, 7.5vw, 9rem);
+    left: var(--gutter);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    /* Two nav columns wide: every copy block ends where "carne" starts. */
+    width: calc((100% - 2 * var(--gutter)) / 2);
+  }
+
+  .copy p {
+    grid-area: 1 / 1;
+    margin: 0;
+    color: inherit;
+    font-size: clamp(0.95rem, 1vw, 1.25rem);
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity 300ms ease;
+  }
+
+  .copy p.is-active {
+    opacity: 1;
+  }
+
+  /* ---------- Screen 3: who we are — each item opens on hover ---------- */
+
+  #about {
+    /* Grows past the viewport when every item is open. */
+    height: auto;
+    min-height: 100svh;
+    /* Same top offset the nav has in the showcase, so the first word sits
+       at the same distance from its section's edge. */
+    padding: 1.7rem var(--gutter);
+  }
+
+  /* Two columns, filled top-to-bottom: items 1-2 left, items 3-4 right.
+     The 1rem gap makes the right column start exactly where the "carne"
+     nav column starts, and shared grid rows keep both columns aligned. */
+  .about-inner {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: auto auto;
+    grid-auto-flow: column;
+    column-gap: 1rem;
+    row-gap: 1.6rem;
+    align-items: start;
+  }
+
+  .item h2 {
+    margin: 0;
+    font-size: inherit;
+    font-weight: 400;
+  }
+
+  .item-head {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    font-weight: 700;
+    font-size: clamp(0.95rem, 1vw, 1.25rem);
+    line-height: 1.5;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .item-head:focus { outline: none; }
+
+  .item-head:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 4px;
+  }
+
+  /* 0fr -> 1fr animates to the content's natural height. */
+  .panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  }
+
+  /* Closing: the text fades out first, then the box collapses. */
+  .panel-inner {
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 240ms ease;
+  }
+
+  .panel-inner > * {
+    margin: 0;
+  }
+
+  .panel-inner > * + * {
+    margin-top: 0.75rem;
+  }
+
+  .panel p,
+  .panel li {
+    font-size: clamp(0.95rem, 1vw, 1.25rem);
+    line-height: 1.5;
+  }
+
+  .panel .lead {
+    font-style: italic;
+  }
+
+  /* Kept on one line of its own, never broken mid-phrase. */
+  .panel .nb {
+    white-space: nowrap;
+  }
+
+  /* "Quiénes somos" reads as prose, so it gets a shorter measure than the
+     lists. In ch, not px, so the break holds when the type scales with the
+     viewport; `pretty` keeps a lone word off the last line. */
+  .item-intro .panel p {
+    max-width: 58ch;
+    text-wrap: pretty;
+  }
+
+  .panel ul {
+    padding: 0;
+    list-style: none;
+  }
+
+  .panel li + li {
+    margin-top: 0.1rem;
+  }
+
+  .panel .pad {
+    height: 0.7rem;
+  }
+
+  /* Open: hover adds .is-open and keeps it, so items stack up open.
+     Keyboard focus is handled in JS via :focus-visible — a plain
+     :focus-within here would reopen the item on the very click that
+     closes it, because clicking a button focuses it. */
+  .item.is-open .panel {
+    grid-template-rows: 1fr;
+  }
+
+  /* Opening: the box starts growing, then the text fades in behind it. */
+  .item.is-open .panel-inner {
+    opacity: 1;
+    transition: opacity 420ms ease 120ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel,
+    .panel-inner { transition: none; }
+  }
+
+  /* ---------- Mobile ---------- */
+
+  @media (max-width: 768px) {
+    :root { --gutter: 7vw; }
+
+    .logo { width: min(52vmin, 320px); }
+    .statement { width: min(84vw, 460px); }
+
+    .bar { padding: 1.4rem var(--gutter) 0; }
+
+    #about { padding: 1.4rem var(--gutter); }
+
+    .nav {
+      grid-template-columns: repeat(2, 1fr);
+      row-gap: 0.4rem;
+    }
+
+    .nav button { font-size: 1.35rem; }
+
+    .copy {
+      top: 6.5rem;
+      right: var(--gutter);
+      width: auto;
+    }
+
+    .copy p { font-size: 0.95rem; }
+
+    /* Portrait crops this photo sideways, so `cover` leaves no vertical
+       slack to shift it. Oversizing it first makes room to push the image
+       down and clear the cows out from behind the copy. */
+    .shot[data-key="campo"] {
+      --size: auto 135%;
+      --pos: 50% 10%;
+    }
+
+    /* One column on phones: the four items simply stack. */
+    .about-inner {
+      grid-template-columns: 1fr;
+      grid-template-rows: none;
+      grid-auto-flow: row;
+      row-gap: 1.4rem;
+    }
+
+    .item-head,
+    .panel p,
+    .panel li { font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+  <section class="screen" id="intro">
+    <div class="intro-stage">
+      <img class="logo" src="assets/logo.svg" alt="Los Petersen Cocineros &amp; Cía.">
+      <img class="statement" src="assets/intro-text.svg" alt="Los Petersen Cocineros &amp; Cía. Empresa familiar con más de 55 años de trayectoria. Respeto por el producto, tradición y fiel equipo humano.">
+    </div>
+  </section>
+
+  <section class="screen" id="showcase">
+    <header class="bar">
+      <nav class="nav">
+        <button type="button" data-key="milanesas">milanesas</button>
+        <button type="button" data-key="pan">pan</button>
+        <button type="button" data-key="carne">carne</button>
+        <button type="button" data-key="campo">campo</button>
+      </nav>
+    </header>
+
+    <div class="stage">
+      <div class="shot" data-key="milanesas" style="--img: url('assets/img/milanesas.jpg')"></div>
+      <div class="shot" data-key="pan" style="--img: url('assets/img/pan.jpg')"></div>
+      <div class="shot" data-key="carne" style="--img: url('assets/img/carne.jpg')"></div>
+      <div class="shot" data-key="campo" style="--img: url('assets/img/campo.jpg')"></div>
+
+      <div class="copy">
+        <p data-key="milanesas">Carne de exportación con 20 días de maduración, huevos pastoriles y rebozado propio de focaccia, panko y centeno orgánico. De nuestra cocina a tu freezer.</p>
+        <p data-key="pan">Trabajamos con harinas orgánicas, masa madre integral y fermentación retrasada en frío. Ese proceso desarrolla el color durante el horneado, y el color es buena parte del sabor de un pan. Sin azúcares, materias grasas ni extractos agregados: solo harina, agua, sal y tiempo.</p>
+        <p data-key="carne">La trazabilidad es lo primero que miramos: de qué campo viene, quién lo crió, qué comió. Recién después hablamos de maduración y de corte. Angus criado a pasto.</p>
+        <p data-key="campo">Nos encanta producir, y sobre todo nos gusta saber de dónde viene cada cosa. Trabajamos con productores que conocemos por nombre, en campos que visitamos, con animales criados como corresponde. Nada de eso es rápido ni se puede apurar. Pero cuando la materia prima es buena de verdad, el resto del trabajo se vuelve más simple.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="about">
+    <div class="about-inner">
+
+      <article class="item item-intro">
+        <h2><button type="button" class="item-head" aria-expanded="false">Quiénes somos</button></h2>
+        <div class="panel"><div class="panel-inner">
+          <div class="pad"></div>
+          <p class="lead">Cuidamos y mejoramos el ánimo de las personas.</p>
+          <p>Lo hacemos a través de la cocina y la producción: alimentación en empresas, catering, restaurantes, alimentos elaborados, formación de equipos y producción propia a campo.<br><span class="nb">Del campo a la mesa.</span></p>
+        </div></div>
+      </article>
+
+      <article class="item">
+        <h2><button type="button" class="item-head" aria-expanded="false">Qué hacemos</button></h2>
+        <div class="panel"><div class="panel-inner">
+          <div class="pad"></div>
+          <ul>
+            <li><b>P_Comedores</b> — alimentación para empresas</li>
+            <li><b>LPC Catering</b> — eventos</li>
+            <li><b>LPC Restaurantes</b> — Hermanos, La Valiente, Pick Up, Racket</li>
+            <li><b>P Milas</b> — milanesas congeladas</li>
+            <li><b>La Villa</b> — granja sustentable y producción agropecuaria</li>
+            <li><b>LPC Rutas</b> — Ruta 8, km 105</li>
+            <li><b>LPC Academia</b> — formación en cocina</li>
+            <li><b>LPC Redes</b> — contenidos</li>
+          </ul>
+        </div></div>
+      </article>
+
+      <article class="item">
+        <h2><button type="button" class="item-head" aria-expanded="false">Valores</button></h2>
+        <div class="panel"><div class="panel-inner">
+          <div class="pad"></div>
+          <ul>
+            <li>Calidad en las personas, las cocinas y el producto.</li>
+            <li>Progresar un poco cada día, y nunca creérsela.</li>
+            <li>Crecer suave y en control.</li>
+            <li>Dar trabajo y devolver oportunidades.</li>
+            <li>Tiempo para uno y para nuestras familias.</li>
+            <li>Vivir tranquilos y con orgullo de lo que hacemos.</li>
+            <li>Movernos con elegancia.</li>
+          </ul>
+        </div></div>
+      </article>
+
+      <article class="item">
+        <h2><button type="button" class="item-head" aria-expanded="false">Cómo trabajamos</button></h2>
+        <div class="panel"><div class="panel-inner">
+          <div class="pad"></div>
+          <ul>
+            <li><b>Servicio y gratitud.</b> Que cada persona se vaya mejor de lo que llegó.</li>
+            <li><b>Uniforme impecable.</b> Es nuestra carta de presentación.</li>
+            <li><b>Cocinas muy limpias.</b> Cocinar es fácil; cuidar la cocina no lo hace cualquiera.</li>
+            <li><b>Buenos productos.</b> Conocerlos, elegirlos y respetar el trabajo que hay detrás.</li>
+            <li><b>Depósitos ordenados.</b> Sin orden no hay progreso.</li>
+            <li><b>Cámaras siempre limpias.</b> No se limpian: están limpias.</li>
+            <li><b>Trabajo en equipo.</b> Colaborar, no competir.</li>
+          </ul>
+        </div></div>
+      </article>
+
+    </div>
+  </section>
+
+<script>
+(function () {
+  var intro = document.getElementById('intro');
+  var showcase = document.getElementById('showcase');
+  var buttons = Array.prototype.slice.call(document.querySelectorAll('.nav button'));
+  var shots = Array.prototype.slice.call(document.querySelectorAll('.shot'));
+  var texts = Array.prototype.slice.call(document.querySelectorAll('.copy p'));
+
+  // Intro: cycles on its own — 2.5s on each side.
+  var HOLD = 2500;
+  var timer;
+
+  function hold() {
+    clearTimeout(timer);
+    timer = setTimeout(function () {
+      intro.classList.toggle('revealed');
+      hold();
+    }, HOLD);
+  }
+
+  // A click swaps right away and restarts the cycle from there.
+  intro.addEventListener('click', function () {
+    intro.classList.toggle('revealed');
+    hold();
+  });
+
+  // The opening logo used to be painted at full strength from the first
+  // frame, while every later appearance fades in over 700ms — so it read as
+  // longer than the rest. Fade the first one in too, and start the clock
+  // with that fade, so every turn of the cycle is identical.
+  var logo = intro.querySelector('.logo');
+  logo.style.opacity = '0';
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () {
+      logo.style.opacity = '';
+      hold();
+    });
+  });
+
+  // The showcase never scrolls: the nav swaps photo and text in place.
+  function select(key) {
+    buttons.forEach(function (b) { b.classList.toggle('is-active', b.dataset.key === key); });
+    shots.forEach(function (s) { s.classList.toggle('is-active', s.dataset.key === key); });
+    texts.forEach(function (p) { p.classList.toggle('is-active', p.dataset.key === key); });
+    showcase.classList.toggle('on-light', key === 'pan');
+  }
+
+  buttons.forEach(function (b) {
+    var pick = function () { select(b.dataset.key); };
+    b.addEventListener('mouseenter', pick);
+    b.addEventListener('focus', pick);
+    b.addEventListener('click', pick);
+  });
+
+  select('milanesas');
+
+  // About: hovering a word opens that item and leaves it open, so they stack
+  // up. They all fold back when the pointer leaves the section, and a click
+  // closes one on its own — which is also how a touch screen opens them.
+  var about = document.getElementById('about');
+
+  // Opening or closing an item shifts the ones under it. The pointer stays
+  // put, but the page slides beneath it, and the browser fires mouseenter for
+  // whatever lands under the cursor — which would toggle an item nobody aimed
+  // at. Such an event carries the same coordinates as the last one, since the
+  // pointer never moved: that is how we tell it apart from a real hover.
+  var anchorX = null;
+  var anchorY = null;
+
+  // A tap on a touch screen fires mouseenter AND click at the same spot, so
+  // a hover-toggle would open the item and the click would shut it again.
+  // Touch devices therefore go through the click handler only.
+  var canHover = window.matchMedia('(hover: hover) and (pointer: fine)');
+
+  function pointerStoodStill(e) {
+    return anchorX !== null &&
+           Math.abs(e.clientX - anchorX) <= 2 &&
+           Math.abs(e.clientY - anchorY) <= 2;
+  }
+
+  var items = Array.prototype.map.call(document.querySelectorAll('.item'), function (item) {
+    var head = item.querySelector('.item-head');
+
+    function setOpen(open) {
+      item.classList.toggle('is-open', open);
+      head.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    // Hovering a word toggles it: closed ones open, open ones fold back, so
+    // the whole section works without ever clicking.
+    head.addEventListener('mouseenter', function (e) {
+      if (!canHover.matches) return;
+      if (pointerStoodStill(e)) return;
+      anchorX = e.clientX;
+      anchorY = e.clientY;
+      setOpen(!item.classList.contains('is-open'));
+    });
+
+    // Keyboard only: a mouse click focuses the button too, and opening on
+    // that focus would undo the click that just closed the item.
+    head.addEventListener('focus', function () {
+      if (head.matches(':focus-visible')) setOpen(true);
+    });
+
+    head.addEventListener('click', function (e) {
+      anchorX = e.clientX;
+      anchorY = e.clientY;
+      setOpen(!item.classList.contains('is-open'));
+    });
+
+    return { close: function () { setOpen(false); } };
+  });
+
+  about.addEventListener('mouseleave', function () {
+    anchorX = null;
+    anchorY = null;
+    items.forEach(function (i) { i.close(); });
+  });
+})();
+</script>
+</body>
+</html>
