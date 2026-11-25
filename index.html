@@ -365,12 +365,18 @@
 
     .copy p { font-size: 0.95rem; }
 
-    /* Portrait crops this photo sideways, so `cover` leaves no vertical
-       slack to shift it. Oversizing it first makes room to push the image
-       down and clear the cows out from behind the copy. */
+    /* Portrait crops these photos sideways, so `cover` leaves no vertical
+       slack to shift them. Oversizing first makes room to push the image
+       down, which also brings the lighter top of the frame behind the copy. */
     .shot[data-key="campo"] {
       --size: auto 135%;
       --pos: 50% 10%;
+    }
+
+    /* Panned right onto the steak; the plate rim keeps the copy legible. */
+    .shot[data-key="carne"] {
+      --size: auto 130%;
+      --pos: 85% 0%;
     }
 
     /* One column on phones: the four items simply stack. */
