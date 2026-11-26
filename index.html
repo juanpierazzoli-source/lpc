@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Los Petersen Cocineros &amp; Cía.</title>
-<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<!-- Flat one-colour mark that flips with the browser's theme; the full-colour
+     logo.svg disappeared against white at 16px. -->
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <meta name="description" content="Los Petersen Cocineros &amp; Cía. Empresa familiar con más de 55 años de trayectoria.">
 
 <!-- Link preview (WhatsApp, Instagram, Slack, iMessage).
@@ -39,6 +41,15 @@
   html {
     scroll-behavior: smooth;
     scroll-snap-type: y mandatory;
+  }
+
+  /* Set by JS on mouse-driven devices only. The browser's own snap animation
+     is short and cannot be slowed down from CSS, so there the wheel is taken
+     over and the travel is animated by hand. Touch keeps native snap, which
+     already feels right with momentum. Without JS, nothing changes. */
+  html.glide {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
   }
 
   body {
@@ -256,9 +267,12 @@
     padding: 0;
     margin: 0;
     font: inherit;
+    /* The same display type as the showcase nav — size, tracking and
+       leading — so both sections read as one typographic system. */
     font-weight: 700;
-    font-size: clamp(0.95rem, 1vw, 1.25rem);
-    line-height: 1.5;
+    font-size: clamp(1rem, 1.5vw, 1.85rem);
+    letter-spacing: -0.01em;
+    line-height: 1;
     color: inherit;
     text-align: left;
     cursor: pointer;
@@ -417,7 +431,9 @@
       row-gap: 1.4rem;
     }
 
-    .item-head,
+    /* Matches .nav button on phones, same as it does on desktop. */
+    .item-head { font-size: 1.35rem; }
+
     .panel p,
     .panel li { font-size: 0.95rem; }
   }
@@ -642,6 +658,90 @@
     anchorY = null;
     items.forEach(function (i) { i.close(); });
   });
+
+  // ---------- Section-to-section travel ----------
+  //
+  // CSS scroll-snap decides WHERE a scroll lands but not HOW LONG it takes;
+  // the browser's animation is a few hundred milliseconds and reads as a
+  // jump. On a mouse or trackpad the wheel is taken over here and the travel
+  // is animated by hand over GLIDE_MS with an ease that starts and ends slow.
+  // Touch is left alone: native snap plus momentum already feels right, and
+  // hijacking it would fight the finger.
+  var fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (fine.matches && !still.matches) {
+    var GLIDE_MS = 1000;   // raise for a slower drift, lower for a snappier one
+    var QUIET_MS = 120;    // a gap this long means a new gesture, not inertia
+    var root = document.documentElement;
+    var screens = Array.prototype.slice.call(document.querySelectorAll('.screen'));
+    var gliding = false;
+    var lastWheel = 0;
+
+    root.classList.add('glide');
+
+    // Where a gesture is allowed to come to rest. Every section starts one,
+    // and a section taller than the window — #about with its items open —
+    // adds a second stop at its far end, so its photo is never skipped.
+    // Recomputed per gesture, because that height changes as items open.
+    function stops() {
+      var vh = window.innerHeight;
+      var max = Math.max(0, root.scrollHeight - vh);
+      var list = [];
+
+      screens.forEach(function (s) {
+        var top = s.offsetTop;
+        list.push(top);
+        if (s.offsetHeight > vh + 2) list.push(top + s.offsetHeight - vh);
+      });
+      list.push(max);
+
+      list = list
+        .map(function (v) { return Math.min(Math.max(v, 0), max); })
+        .sort(function (a, b) { return a - b; });
+
+      return list.filter(function (v, i) { return i === 0 || v - list[i - 1] > 2; });
+    }
+
+    function glideTo(target) {
+      var from = window.scrollY;
+      var dist = target - from;
+      if (Math.abs(dist) < 2) return;
+
+      gliding = true;
+      var start = performance.now();
+
+      requestAnimationFrame(function step(now) {
+        var p = Math.min(1, (now - start) / GLIDE_MS);
+        // easeInOutCubic: slow away, slow in, no abrupt edge at either end.
+        var e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+        window.scrollTo(0, from + dist * e);
+        if (p < 1) requestAnimationFrame(step);
+        else gliding = false;
+      });
+    }
+
+    window.addEventListener('wheel', function (e) {
+      if (e.ctrlKey) return;   // pinch-zoom, not a scroll
+      e.preventDefault();
+
+      var now = performance.now();
+      var quiet = now - lastWheel;
+      lastWheel = now;
+
+      // Trackpad inertia keeps firing after the finger lifts. Only a gesture
+      // that begins after a real pause counts, so one flick moves one stop.
+      if (gliding || quiet < QUIET_MS || !e.deltaY) return;
+
+      var here = window.scrollY;
+      var list = stops();
+      var next = e.deltaY > 0
+        ? list.find(function (v) { return v > here + 2; })
+        : list.filter(function (v) { return v < here - 2; }).pop();
+
+      if (next !== undefined) glideTo(next);
+    }, { passive: false });
+  }
 })();
 </script>
 </body>
