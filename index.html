@@ -64,8 +64,15 @@
     html { scroll-behavior: auto; }
   }
 
+  /* dvh, not svh. svh is the height the window has with the browser bars
+     fully expanded, which on iOS — and inside the WhatsApp browser — is
+     shorter than the area actually on screen, so the next section peeked in
+     under this one. dvh is whatever is visible right now, so a section fills
+     the window exactly and never shares it. svh stays as the fallback for
+     browsers that predate dvh. */
   .screen {
     height: 100svh;
+    height: 100dvh;
     scroll-snap-align: start;
     scroll-snap-stop: always;
   }
@@ -228,6 +235,7 @@
     /* Grows past the viewport when every item is open. */
     height: auto;
     min-height: 100svh;
+    min-height: 100dvh;
     /* Same top offset the nav has in the showcase, so the first word sits
        at the same distance from its section's edge. */
     padding: var(--section-gap) var(--gutter);
@@ -311,6 +319,10 @@
   .panel li {
     font-size: clamp(0.95rem, 1vw, 1.25rem);
     line-height: 1.5;
+    /* Lets the browser pull a word down rather than leave one alone on the
+       last line. It handles most cases; the ones it cannot are tied with a
+       hard space at the source. */
+    text-wrap: pretty;
   }
 
   .panel .lead {
@@ -514,7 +526,8 @@
         <div class="panel"><div class="panel-inner">
           <div class="pad"></div>
           <ul>
-            <li>Calidad en las personas, las cocinas y el producto.</li>
+            <!-- Hard space: the narrow phone column left "producto." alone. -->
+            <li>Calidad en las personas, las cocinas y el&nbsp;producto.</li>
             <li>Progresar un poco cada día, y nunca creérsela.</li>
             <li>Crecer suave y en control.</li>
             <li>Dar trabajo y devolver oportunidades.</li>
