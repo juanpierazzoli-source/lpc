@@ -434,6 +434,13 @@
     /* Matches .nav button on phones, same as it does on desktop. */
     .item-head { font-size: 1.35rem; }
 
+    /* Narrow column: the term gets its own line and the definition sits
+       under it. The items then need real air between them, otherwise one
+       term runs straight into the previous definition. */
+    .panel ul.defs b { display: block; }
+
+    .panel ul.defs li + li { margin-top: 0.55rem; }
+
     .panel p,
     .panel li { font-size: 0.95rem; }
   }
@@ -522,7 +529,8 @@
         <h2><button type="button" class="item-head" aria-expanded="false">Cómo trabajamos</button></h2>
         <div class="panel"><div class="panel-inner">
           <div class="pad"></div>
-          <ul>
+          <!-- Term + definition: on phones the term takes its own line. -->
+          <ul class="defs">
             <li><b>Servicio y gratitud.</b> Que cada persona se vaya mejor de lo que llegó.</li>
             <li><b>Uniforme impecable.</b> Es nuestra carta de presentación.</li>
             <li><b>Cocinas muy limpias.</b> Cocinar es fácil; cuidar la cocina no lo hace cualquiera.</li>
