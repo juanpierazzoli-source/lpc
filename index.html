@@ -29,6 +29,9 @@
     --fade: 700ms;
     --gutter: 6.4vw;
     --dim: 0.1;
+    /* The breathing room a section leaves at its own edge. One token, so the
+       gap above "Quiénes somos" and the gap above the team photo stay equal. */
+    --section-gap: 1.7rem;
   }
 
   * { box-sizing: border-box; }
@@ -216,7 +219,11 @@
     min-height: 100svh;
     /* Same top offset the nav has in the showcase, so the first word sits
        at the same distance from its section's edge. */
-    padding: 1.7rem var(--gutter);
+    padding: var(--section-gap) var(--gutter);
+    /* Column flex so the photo can sit on the section's bottom edge when the
+       items are closed and the viewport is taller than the content. */
+    display: flex;
+    flex-direction: column;
   }
 
   /* Two columns, filled top-to-bottom: items 1-2 left, items 3-4 right.
@@ -224,6 +231,9 @@
      nav column starts, and shared grid rows keep both columns aligned. */
   .about-inner {
     width: 100%;
+    flex: 0 0 auto;
+    /* The gap the photo is never allowed to come closer than. */
+    margin-bottom: var(--section-gap);
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: auto auto;
@@ -333,6 +343,25 @@
     transition: opacity 420ms ease 120ms;
   }
 
+  /* The team photo closes the section. It simply follows the items in flow,
+     so when a panel grows the photo is carried down with it, on the panel's
+     own 520ms easing — no animation of its own is needed.
+     Negative margins cancel the section padding so it bleeds to the edges.
+     `margin-top: auto` parks it on the section's bottom edge; the gap above
+     it is .about-inner's margin-bottom — exactly one --section-gap, the same
+     distance that separates the showcase from this section — plus whatever
+     slack a tall viewport leaves over. Once the items are open there is no
+     slack left and the gap is exactly --section-gap. */
+  .about-photo {
+    display: block;
+    flex: 0 0 auto;
+    width: calc(100% + 2 * var(--gutter));
+    height: auto;
+    margin: auto
+            calc(-1 * var(--gutter))
+            calc(-1 * var(--section-gap));
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .panel,
     .panel-inner { transition: none; }
@@ -341,14 +370,15 @@
   /* ---------- Mobile ---------- */
 
   @media (max-width: 768px) {
-    :root { --gutter: 7vw; }
+    :root {
+      --gutter: 7vw;
+      --section-gap: 1.4rem;
+    }
 
     .logo { width: min(52vmin, 320px); }
     .statement { width: min(84vw, 460px); }
 
     .bar { padding: 1.4rem var(--gutter) 0; }
-
-    #about { padding: 1.4rem var(--gutter); }
 
     .nav {
       grid-template-columns: repeat(2, 1fr);
@@ -489,6 +519,9 @@
       </article>
 
     </div>
+
+    <img class="about-photo" src="assets/img/equipo.jpg" width="2000" height="1334"
+         alt="El equipo de Los Petersen Cocineros &amp; Cía. en la vereda del restaurante.">
   </section>
 
 <script>
